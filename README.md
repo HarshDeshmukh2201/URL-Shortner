@@ -1,0 +1,203 @@
+<div align="center">
+
+# 🔗 URL Shortener
+
+**A modern, full-stack URL shortener with click analytics**
+
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+
+Transform long, unwieldy links into short, shareable URLs — and track every click with built-in analytics.
+
+[Features](#-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [API Reference](#-api-reference) • [Project Structure](#-project-structure)
+
+</div>
+
+---
+
+## ✨ Features
+
+- ⚡ **Instant Shortening** — Turn any long URL into a compact 8-character ID using `nanoid`
+- 📊 **Click Analytics** — Track total clicks and view a full visit history with timestamps for every short link
+- 📋 **One-Click Copy** — Copy the shortened URL to your clipboard with a single click
+- 🎨 **Clean Modern UI** — Minimal, responsive interface built with Tailwind CSS 4
+- 🔀 **Seamless Redirects** — Fast redirects that automatically record every visit
+- ✅ **Input Validation** — URL and shortId validation with clear, friendly error messages
+- 🧩 **Clean Architecture** — Well-separated routes, controllers, models, and DB layers
+
+## 🛠 Tech Stack
+
+| Layer     | Technology                                                      |
+| --------- | --------------------------------------------------------------- |
+| Frontend  | Next.js 16 (App Router), React 19, Tailwind CSS 4                |
+| Backend   | Node.js, Express 5                                              |
+| Database  | MongoDB (MongoDB Atlas) via Mongoose 9                           |
+| ID Engine | [nanoid](https://github.com/ai/nanoid) — collision-resistant IDs |
+| Dev Tools | Nodemon (auto-reload), ESLint, PostCSS                           |
+
+
+## 📁 Project Structure
+
+```
+URL_shortner/
+├── backend/
+│   ├── controllers/
+│   │   └── url.js          # Shorten + analytics handlers
+│   ├── DB/
+│   │   └── connect.js      # MongoDB connection helper
+│   ├── models/
+│   │   └── url.js          # Mongoose URL schema
+│   ├── routes/
+│   │   └── url.js          # /api/url routes
+│   ├── .env                # Environment variables (not committed)
+│   ├── index.js            # Express app entry point
+│   └── package.json
+└── frontend/
+    ├── app/
+    │   ├── components/
+    │   │   ├── Analytics.jsx      # Analytics lookup + visit history UI
+    │   │   ├── Header.jsx         # Page header
+    │   │   ├── ShortenedURL.jsx   # Result display + copy button
+    │   │   └── URLForm.jsx        # URL input form
+    │   ├── globals.css
+    │   ├── layout.js              # Root layout + metadata
+    │   └── page.js                # Home page (client component)
+    ├── next.config.mjs     # Rewrites /api/* → backend
+    └── package.json
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18 or later)
+- A MongoDB instance — local or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster
+
+### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/HarshDeshmukh2201/URL-shortner.git
+cd URL_shortner
+```
+
+### 2️⃣ Set up the backend
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file in the `backend/` folder:
+
+```env
+PORT=9000
+MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/<dbname>?retryWrites=true&w=majority
+```
+
+Start the server:
+
+```bash
+npm start
+# ➜ Server started at http://localhost:9000
+```
+
+### 3️⃣ Set up the frontend
+
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser — the app is live! 🎉
+
+> 💡 The frontend proxies all `/api/*` requests to the backend on port `9000` via a rewrite rule in `next.config.mjs`, so no CORS configuration is needed in development.
+
+
+## 📡 API Reference
+
+### `POST /api/url` — Create a short URL
+
+**Request**
+
+```http
+POST /api/url
+Content-Type: application/json
+
+{ "url": "https://www.example.com/very/long/path?with=parameters" }
+```
+
+**Response** `201 Created`
+
+```json
+{
+  "shortId": "V1StGXR8_Z5",
+  "message": "URL created successfully"
+}
+```
+
+### `GET /api/url/analytics?shortId=<shortId>` — Get click analytics
+
+**Response** `200 OK`
+
+```json
+{
+  "shortId": "V1StGXR8_Z5",
+  "totalClick": 3,
+  "analytics": [
+    { "timestamp": 1718000000000 },
+    { "timestamp": 1718008642000 },
+    { "timestamp": 1718017284000 }
+  ]
+}
+```
+
+### `GET /:shortId` — Redirect to the original URL
+
+```http
+GET /V1StGXR8_Z5
+```
+
+Redirects to the stored URL and records a visit in the history. Returns `404` if the shortId does not exist.
+
+### Error Format
+
+| Status | Meaning                | Example body                            |
+| ------ | ---------------------- | --------------------------------------- |
+| `400`  | Missing required field | `{ "error": "url is required" }`        |
+| `404`  | Short URL not found    | `{ "error": "URL not found" }`          |
+| `500`  | Server error           | `{ "error": "Internal server error" }`  |
+
+## 🔍 How It Works
+
+1. **Shorten** — The frontend sends the long URL to `POST /api/url`. The backend generates a unique 8-character ID with `nanoid` and stores `{ shortId, redirectURL, visitHistory }` in MongoDB.
+2. **Redirect** — Visiting `/:shortId` looks up the entry, appends a timestamp to `visitHistory`, and redirects the user to the original URL.
+3. **Analyze** — Entering a shortId in the Analytics card fetches the total click count and the complete visit history.
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to fork the repo, open an issue, or submit a pull request.
+
+```bash
+git checkout -b feature/awesome-feature
+git commit -m "Add awesome feature"
+git push origin feature/awesome-feature
+```
+
+## 📄 License
+
+This project is licensed under the [ISC](https://opensource.org/licenses/ISC) License.
+
+---
+
+<div align="center">
+
+**Built with ❤️ by [Harsh Deshmukh](https://github.com/HarshDeshmukh2201)**
+
+⭐ Star this repo if you found it helpful!
+
+</div>
