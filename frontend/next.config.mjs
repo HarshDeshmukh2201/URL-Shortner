@@ -1,14 +1,12 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
-    const apiUrl =
-      process.env.API_URL || "http://localhost:9000";
-
+    // Local dev: http://localhost:9000 — on Vercel set API_URL to the backend deployment URL
+    const apiUrl = process.env.API_URL || 'http://localhost:9000';
     return [
       {
-        source: "/api/:path*",
-        destination: `${apiUrl.replace(/\/+$/, "")}/api/:path*`,
+        source: '/api/:path*',
+        destination: `${apiUrl}/api/:path*`,
       },
     ];
   },
