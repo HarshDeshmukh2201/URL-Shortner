@@ -22,7 +22,8 @@ Transform long, unwieldy links into short, shareable URLs — and track every cl
 ## ✨ Features
 
 - ⚡ **Instant Shortening** — Turn any long URL into a compact 8-character ID using `nanoid`
-- 📊 **Click Analytics** — Track total clicks and view a full visit history with timestamps for every short link
+- 📊 **Click & Copy Analytics** — Track total clicks *and* copies, plus a clean click-by-click history timeline for every short link
+- 🕰️ **URL History** — Browse recently shortened links with live click & copy stats, one click away from copying again
 - 📋 **One-Click Copy** — Copy the shortened URL to your clipboard with a single click
 - 🎨 **Clean Modern UI** — Minimal, responsive interface built with Tailwind CSS 4
 - 🔀 **Seamless Redirects** — Fast redirects that automatically record every visit
@@ -61,6 +62,7 @@ URL_shortner/
     │   ├── components/
     │   │   ├── Analytics.jsx      # Analytics lookup + visit history UI
     │   │   ├── Header.jsx         # Page header
+    │   │   ├── History.jsx        # Recent links list + per-link stats
     │   │   ├── ShortenedURL.jsx   # Result display + copy button
     │   │   └── URLForm.jsx        # URL input form
     │   ├── globals.css
@@ -152,6 +154,62 @@ Content-Type: application/json
     { "timestamp": 1718000000000 },
     { "timestamp": 1718008642000 },
     { "timestamp": 1718017284000 }
+  ],
+  "totalCopies": 2,
+  "copyHistory": [
+    { "timestamp": 1718005000000 },
+    { "timestamp": 1718012000000 }
+  ]
+}
+```
+
+### `POST /api/url/copy` — Track a copy event
+
+Recorded automatically when a user clicks the **Copy** button in the UI.
+
+**Request**
+
+```http
+POST /api/url/copy
+Content-Type: application/json
+
+{ "shortId": "V1StGXR8_Z5" }
+```
+
+**Response** `200 OK`
+
+```json
+{
+  "shortId": "V1StGXR8_Z5",
+  "totalCopies": 3,
+  "message": "Copy tracked successfully"
+}
+```
+
+### `GET /api/url/history` — List recently created short URLs
+
+Returns the latest short links (newest first), each with live click & copy counts. Supports an optional `?limit=` (default 15, max 50).
+
+**Response** `200 OK`
+
+```json
+{
+  "count": 2,
+  "urls": [
+    {
+      "shortId": "V1StGXR8_Z5",
+      "redirectURL": "https://www.example.com/very/long/path",
+      "totalClick": 3,
+      "totalCopies": 2,
+      "createdAt": "2026-10-16T09:30:00.000Z"
+    },
+    {
+      "shortId": "aB3xY9qw",
+      "redirectURL": "https://github.com/HarshDeshmukh2201/URL-shortner",
+      "totalClick": 1,
+      "totalCopies": 0,
+      "createdAt": "2026-10-16T08:15:00.000Z"
+    }
   ]
 }
 ```

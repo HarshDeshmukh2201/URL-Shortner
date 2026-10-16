@@ -15,6 +15,11 @@ const urlSchema = new mongoose.Schema(
             timestamp:{
                 type:Number
             }
+        }],
+        copyHistory:[{
+            timestamp:{
+                type:Number
+            }
         }]
     }
     ,{timestamps:true}
