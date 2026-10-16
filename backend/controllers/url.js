@@ -13,12 +13,17 @@ const handleGenerateNewShortURL = async (req, res) => {
   }
   const shortId = generateShortId();
 
-  await URL.create({
-    shortId: shortId,
-    redirectURL: body.url,
-    visitHistory: [],
-    copyHistory: [],
-  });
+  try {
+    await URL.create({
+      shortId: shortId,
+      redirectURL: body.url,
+      visitHistory: [],
+      copyHistory: [],
+    });
+  } catch (err) {
+    console.error("Create URL error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 
   return res.status(201).json({ shortId, message: "URL created successfully" });
 };
@@ -28,7 +33,13 @@ const handleGetAnalytics = async (req, res) => {
   if (!shortId) {
     return res.status(400).json({ error: "shortId is required" });
   }
-  const result = await URL.findOne({ shortId });
+  let result;
+  try {
+    result = await URL.findOne({ shortId });
+  } catch (err) {
+    console.error("Analytics error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
   
   if (!result) {
     return res.status(404).json({ error: "URL not found" });
@@ -49,11 +60,17 @@ const handleTrackCopy = async (req, res) => {
     return res.status(400).json({ error: "shortId is required" });
   }
 
-  const result = await URL.findOneAndUpdate(
-    { shortId },
-    { $push: { copyHistory: { timestamp: Date.now() } } },
-    { new: true }
-  );
+  let result;
+  try {
+    result = await URL.findOneAndUpdate(
+      { shortId },
+      { $push: { copyHistory: { timestamp: Date.now() } } },
+      { new: true }
+    );
+  } catch (err) {
+    console.error("Track copy error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 
   if (!result) {
     return res.status(404).json({ error: "URL not found" });
@@ -69,10 +86,16 @@ const handleTrackCopy = async (req, res) => {
 const handleGetHistory = async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit, 10) || 15, 50);
 
-  const result = await URL.find({})
-    .sort({ createdAt: -1, _id: -1 })
-    .limit(limit)
-    .select("shortId redirectURL visitHistory copyHistory createdAt");
+  let result;
+  try {
+    result = await URL.find({})
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(limit)
+      .select("shortId redirectURL visitHistory copyHistory createdAt");
+  } catch (err) {
+    console.error("History error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 
   const urls = result.map((doc) => ({
     shortId: doc.shortId,

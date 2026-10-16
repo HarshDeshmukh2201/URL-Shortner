@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 const urlRoute = require('./routes/url');
 const { connectToMongoDB } = require('./DB/connect');
 const URL = require('./models/url');
@@ -22,6 +23,18 @@ if (!global._mongoConnectionPromise) {
 
 // URL routes
 app.use('/api/url', urlRoute);
+
+// Health check — handy on Vercel to confirm the MongoDB connection
+app.get('/health', (req, res) => {
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  const dbStates = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  const db = dbStates[mongoose.connection.readyState] || 'unknown';
+  return res.status(db === 'connected' ? 200 : 503).json({
+    status: db === 'connected' ? 'ok' : 'degraded',
+    db,
+    node: process.version,
+  });
+});
 
 // Redirect route
 app.get('/:shortId', async (req, res) => {
