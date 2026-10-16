@@ -5,7 +5,8 @@ import { useState } from 'react';
 export default function ShortenedURL({ shortId }) {
   const [copied, setCopied] = useState(false);
 
-  const shortUrl = `http://localhost:9000/${shortId}`;
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000';
+  const shortUrl = `${API_BASE}/${shortId}`;
 
   const handleCopy = async () => {
     try {

@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 
 const express = require('express');
@@ -13,10 +12,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
-connectToMongoDB(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection failed:', err));
+// MongoDB connection — cached globally so serverless invocations (Vercel)
+// reuse the same connection instead of reconnecting on every request
+if (!global._mongoConnectionPromise) {
+  global._mongoConnectionPromise = connectToMongoDB(process.env.MONGO_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch((err) => console.error('MongoDB connection failed:', err));
+}
 
 // URL routes
 app.use('/api/url', urlRoute);
@@ -43,8 +45,14 @@ app.get('/:shortId', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 9000;
 
-app.listen(PORT, () => {
-  console.log(`Server started at http://localhost:${PORT}`);
-});
+// Start a real HTTP server only when running locally (npm start).
+// On Vercel the app is exported as a serverless function — see api/index.js.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server started at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

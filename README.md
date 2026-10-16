@@ -236,6 +236,42 @@ Redirects to the stored URL and records a visit in the history. Returns `404` if
 2. **Redirect** — Visiting `/:shortId` looks up the entry, appends a timestamp to `visitHistory`, and redirects the user to the original URL.
 3. **Analyze** — Entering a shortId in the Analytics card fetches the total click count and the complete visit history.
 
+## ☁️ Deployment (Vercel)
+
+The backend is Vercel-ready — the Express app is exported as a serverless function (`backend/api/index.js` + `backend/vercel.json`), while still running as a normal server locally with `npm start`.
+
+### 1️⃣ Push to GitHub
+
+```bash
+git add .
+git commit -m "Deploy-ready backend"
+git push
+```
+
+### 2️⃣ Deploy the backend
+
+1. [Vercel](https://vercel.com) → **Add New… → Project** → import this repo
+2. In **Project Settings → General**, set **Root Directory** to `backend`
+3. Add environment variable: `MONGO_URI` = your MongoDB Atlas connection string
+4. Deploy → copy the deployment URL (e.g. `https://url-shortner-api.vercel.app`)
+
+> 💡 **MongoDB Atlas:** add `0.0.0.0/0` ("Allow Access From Anywhere") to the IP Access List — Vercel serverless IPs are dynamic.
+
+### 3️⃣ Deploy the frontend
+
+1. Vercel → **Add New… → Project** → import the **same repo** again
+2. Set **Root Directory** to `frontend`
+3. Add environment variables (both = the backend URL from step 2):
+   - `API_URL` — server-side `/api/*` rewrite target
+   - `NEXT_PUBLIC_API_URL` — short links & copy buttons in the UI
+4. Deploy. Done! 🎉
+
+Your short links now look like `https://url-shortner-api.vercel.app/V1StGXR8_Z5`.
+
+> ⚠️ **Security reminder:** `backend/.env` is committed to git with real credentials. Rotate the Atlas password, run `git rm --cached backend/.env`, and keep `MONGO_URI` only in Vercel's environment settings.
+
+> 💡 **Cold starts:** Vercel's free tier puts serverless functions to sleep after inactivity — the first request after idle may take ~1–3 seconds. Prefer a always-on host? Deploy `backend/` to [Render](https://render.com) as a Web Service (start command `npm start`) — the code works there unchanged.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to fork the repo, open an issue, or submit a pull request.

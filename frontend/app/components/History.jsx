@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000';
+
 const formatTime = (iso) => {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
@@ -44,7 +46,7 @@ export default function History({ refreshKey = 0 }) {
 
   const handleCopy = async (shortId) => {
     try {
-      await navigator.clipboard.writeText(`http://localhost:9000/${shortId}`);
+      await navigator.clipboard.writeText(`${API_BASE}/${shortId}`);
       setCopiedId(shortId);
       setTimeout(() => setCopiedId(''), 2000);
 
@@ -161,7 +163,7 @@ export default function History({ refreshKey = 0 }) {
                     {index + 1}
                   </span>
                   <a
-                    href={`http://localhost:9000/${item.shortId}`}
+                    href={`${API_BASE}/${item.shortId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="truncate font-mono text-sm font-semibold text-indigo-600 hover:underline"
