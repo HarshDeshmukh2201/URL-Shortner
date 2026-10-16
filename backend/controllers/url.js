@@ -1,12 +1,17 @@
-const { nanoid } = require("nanoid");
+const crypto = require("crypto");
 const URL = require("../models/url");
+
+// URL-safe 8-character short ID via Node's built-in crypto.
+// (nanoid v5 is ESM-only, which crashes require() on some serverless runtimes.)
+const generateShortId = () =>
+  crypto.randomBytes(6).toString("base64url").slice(0, 8);
 
 const handleGenerateNewShortURL = async (req, res) => {
   const body = req.body;
   if (!body.url) {
     return res.status(400).json({ error: "url is required" });
   }
-  const shortId = nanoid(8);
+  const shortId = generateShortId();
 
   await URL.create({
     shortId: shortId,
