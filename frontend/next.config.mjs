@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:9000/api/:path*',
+        destination: 'https://url-shortner-pink-one.vercel.app',
           // destination: 'http://localhost:9000/api/:path*',
       },
     ];
